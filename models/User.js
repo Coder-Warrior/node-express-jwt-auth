@@ -54,6 +54,24 @@ userSchema.statics.NameValidation = async function (name) {
 
 }
 
+userSchema.statics.login = async function (email, data) {
+  const user = await this.findOne({email});
+  
+  if (user) {
+    if (user.name !== data.name) {
+      throw Error('Name Isnt Correct');
+    }
+    console.log(data.password);
+    const isPasswordCorrect = await bcrypt.compare(data.password, user.password);
+    if (isPasswordCorrect === false) {
+      throw Error('Password Isnt Correct');
+    }
+    return user;
+  }
+
+  throw Error('This User Isnt Exsists');
+}
+
 userSchema.pre('save', async function(next) {
   const salt = await bcrypt.genSalt();
   this.password = await bcrypt.hash(this.password, salt);
